@@ -12,7 +12,10 @@ function errorHandler(err, req, res, next) {
     typeof err.message === "string" && err.message.length > 0
       ? err.message
       : "Something went wrong";
-  const details = err.details !== undefined ? err.details : null;
+  const details =
+    err.details !== undefined && err.details !== null && typeof err.details === "object"
+      ? err.details
+      : {};
 
   res.status(status).json({
     success: false,

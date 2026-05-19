@@ -18,7 +18,13 @@ All JSON responses use a consistent shape:
 }
 ```
 
-Send header **`x-user-role`** with one of: `admin`, `trainer`, `trainee` (case-insensitive).
+## Authentication
+
+All protected routes (every endpoint under `/users` and `/trainees`) require the request header:
+
+`x-user-role: admin | trainer | trainee`
+
+The value is case-insensitive. If the header is missing, or the role is not allowed for the route, the API responds with `403 FORBIDDEN` using the standard error envelope.
 
 ## Users
 
@@ -74,16 +80,184 @@ Send header **`x-user-role`** with one of: `admin`, `trainer`, `trainee` (case-i
 }
 ```
 
-**401** — missing role header
+**POST /users** with `x-user-role: admin`
+
+Request body:
+
+```json
+{
+  "firstName": "Sara",
+  "lastName": "Ben",
+  "userRole": "trainer"
+}
+```
+
+Response `201`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": 4,
+    "firstName": "Sara",
+    "lastName": "Ben",
+    "userRole": "trainer",
+    "createDate": "2026-05-19T09:00:00.000Z",
+    "updateDate": "2026-05-19T09:00:00.000Z"
+  },
+  "error": null
+}
+```
+
+**PUT /users/:id** with `x-user-role: admin` (e.g. `PUT /users/4`)
+
+Request body:
+
+```json
+{
+  "firstName": "Sara",
+  "lastName": "Ben-David",
+  "userRole": "trainee"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": 4,
+    "firstName": "Sara",
+    "lastName": "Ben-David",
+    "userRole": "trainee",
+    "createDate": "2026-05-19T09:00:00.000Z",
+    "updateDate": "2026-05-19T09:15:00.000Z"
+  },
+  "error": null
+}
+```
+
+**DELETE /users/:id** with `x-user-role: admin` (e.g. `DELETE /users/4`)
+
+Response `200`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": 4,
+    "firstName": "Sara",
+    "lastName": "Ben-David",
+    "userRole": "trainee",
+    "createDate": "2026-05-19T09:00:00.000Z",
+    "updateDate": "2026-05-19T09:15:00.000Z"
+  },
+  "error": null
+}
+```
+
+**POST /trainees** — response `201` (request body shown above)
+
+```json
+{
+  "success": true,
+  "data": {
+    "traineeId": 4,
+    "userId": 3,
+    "trainerId": 2,
+    "fitnessGoal": "Half marathon prep",
+    "experienceLevel": "intermediate",
+    "weeklyWorkouts": 4,
+    "status": "active",
+    "createDate": "2026-05-19T09:00:00.000Z",
+    "updateDate": "2026-05-19T09:00:00.000Z"
+  },
+  "error": null
+}
+```
+
+**PUT /trainees/:id** with `x-user-role: trainer` (e.g. `PUT /trainees/4`)
+
+Request body:
+
+```json
+{
+  "userId": 3,
+  "trainerId": 2,
+  "fitnessGoal": "Marathon prep",
+  "experienceLevel": "advanced",
+  "weeklyWorkouts": 5,
+  "status": "active"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "traineeId": 4,
+    "userId": 3,
+    "trainerId": 2,
+    "fitnessGoal": "Marathon prep",
+    "experienceLevel": "advanced",
+    "weeklyWorkouts": 5,
+    "status": "active",
+    "createDate": "2026-05-19T09:00:00.000Z",
+    "updateDate": "2026-05-19T09:15:00.000Z"
+  },
+  "error": null
+}
+```
+
+**DELETE /trainees/:id** with `x-user-role: admin` (e.g. `DELETE /trainees/4`)
+
+Response `200`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "traineeId": 4,
+    "userId": 3,
+    "trainerId": 2,
+    "fitnessGoal": "Marathon prep",
+    "experienceLevel": "advanced",
+    "weeklyWorkouts": 5,
+    "status": "active",
+    "createDate": "2026-05-19T09:00:00.000Z",
+    "updateDate": "2026-05-19T09:15:00.000Z"
+  },
+  "error": null
+}
+```
+
+**403** — missing role header
 
 ```json
 {
   "success": false,
   "data": null,
   "error": {
-    "code": "MISSING_ROLE",
-    "message": "Missing role header",
+    "code": "FORBIDDEN",
+    "message": "You do not have permission to perform this action.",
     "details": { "header": "x-user-role" }
+  }
+}
+```
+
+**403** — role not allowed for this route
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "You do not have permission to perform this action.",
+    "details": { "role": "trainee", "allowedRoles": ["admin"] }
   }
 }
 ```

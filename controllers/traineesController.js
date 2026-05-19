@@ -120,7 +120,7 @@ function getAll(req, res) {
 function getById(req, res) {
   const trainee = traineesData.getById(req.parsedId);
   if (!trainee) {
-    throw fail(404, "TRAINEE_NOT_FOUND", `Trainee with traineeId ${req.parsedId} not found`, null);
+    throw fail(404, "TRAINEE_NOT_FOUND", `Trainee with traineeId ${req.parsedId} not found`, { id: req.parsedId });
   }
   res.json({ success: true, data: trainee, error: null });
 }
@@ -137,7 +137,7 @@ function update(req, res) {
   const payload = validateTraineeBody(body, true);
   const updated = traineesData.update(req.parsedId, payload);
   if (!updated) {
-    throw fail(404, "TRAINEE_NOT_FOUND", `Trainee with traineeId ${req.parsedId} not found`, null);
+    throw fail(404, "TRAINEE_NOT_FOUND", `Trainee with traineeId ${req.parsedId} not found`, { id: req.parsedId });
   }
   res.json({ success: true, data: updated, error: null });
 }
@@ -145,7 +145,7 @@ function update(req, res) {
 function remove(req, res) {
   const removed = traineesData.remove(req.parsedId);
   if (!removed) {
-    throw fail(404, "TRAINEE_NOT_FOUND", `Trainee with traineeId ${req.parsedId} not found`, null);
+    throw fail(404, "TRAINEE_NOT_FOUND", `Trainee with traineeId ${req.parsedId} not found`, { id: req.parsedId });
   }
   res.json({ success: true, data: removed, error: null });
 }

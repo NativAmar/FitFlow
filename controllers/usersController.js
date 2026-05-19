@@ -66,7 +66,7 @@ function getAll(req, res) {
 function getById(req, res) {
   const user = usersData.getById(req.parsedId);
   if (!user) {
-    throw fail(404, "USER_NOT_FOUND", `User with userId ${req.parsedId} not found`, null);
+    throw fail(404, "USER_NOT_FOUND", `User with userId ${req.parsedId} not found`, { id: req.parsedId });
   }
   res.json({ success: true, data: user, error: null });
 }
@@ -83,7 +83,7 @@ function update(req, res) {
   const payload = validateUserBody(body, true);
   const updated = usersData.update(req.parsedId, payload);
   if (!updated) {
-    throw fail(404, "USER_NOT_FOUND", `User with userId ${req.parsedId} not found`, null);
+    throw fail(404, "USER_NOT_FOUND", `User with userId ${req.parsedId} not found`, { id: req.parsedId });
   }
   res.json({ success: true, data: updated, error: null });
 }
@@ -91,7 +91,7 @@ function update(req, res) {
 function remove(req, res) {
   const removed = usersData.remove(req.parsedId);
   if (!removed) {
-    throw fail(404, "USER_NOT_FOUND", `User with userId ${req.parsedId} not found`, null);
+    throw fail(404, "USER_NOT_FOUND", `User with userId ${req.parsedId} not found`, { id: req.parsedId });
   }
   res.json({ success: true, data: removed, error: null });
 }

@@ -28,7 +28,7 @@ app.use((req, res) => {
     error: {
       code: "NOT_FOUND",
       message: "Route not found",
-      details: req.originalUrl,
+      details: { path: req.originalUrl },
     },
   });
 });
