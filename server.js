@@ -1,13 +1,24 @@
 const express = require("express");
+const cors = require("cors");
 const logger = require("./middleware/logger");
 const errorHandler = require("./middleware/errorHandler");
 const usersRoutes = require("./routes/usersRoutes");
 const traineesRoutes = require("./routes/traineesRoutes");
+const authRoutes = require("./routes/authRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "x-user-role"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
 app.use(logger);
 
 app.get("/", (req, res) => {
@@ -18,8 +29,10 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/users", usersRoutes);
-app.use("/trainees", traineesRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use(["/users", "/api/users"], usersRoutes);
+app.use(["/trainees", "/api/trainees"], traineesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
