@@ -1,9 +1,12 @@
-const express = require("express");
-const authController = require("../controllers/authController");
+'use strict'
 
-const router = express.Router();
+const express = require('express')
+const authController = require('../controllers/authController')
+const requireAuth = require('../middleware/requireAuth')
 
-router.post("/login", authController.login);
-router.post("/logout", authController.logout);
+const router = express.Router()
 
-module.exports = router;
+router.post('/login', authController.login)
+router.post('/logout', requireAuth, authController.logout)
+
+module.exports = router

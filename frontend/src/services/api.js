@@ -1,20 +1,9 @@
 const API_BASE_URL = "http://localhost:3000";
 
 const TOKEN_KEY = "fitflow_token";
-const USER_KEY = "fitflow_user";
 
 function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY);
-}
-
-function getStoredUser() {
-  const raw = localStorage.getItem(USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }
 
 async function apiRequest(path, options = {}) {
@@ -28,10 +17,7 @@ async function apiRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const user = getStoredUser();
-  if (user && user.userRole) {
-    headers["x-user-role"] = user.userRole;
-  }
+  // x-user-role header intentionally omitted — all routes use JWT from Authorization
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -52,6 +38,7 @@ async function apiRequest(path, options = {}) {
     if (body.error) {
       err.code = body.error.code;
       err.details = body.error.details;
+      err.httpStatus = response.status;
     }
     throw err;
   }

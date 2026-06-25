@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { getSettings, updateSettings } from "../services/settingsService";
 import { applyTheme } from "../services/themeService";
+import { useAuth } from "../context/AuthContext";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_THEMES = ["light", "dark", "system"];
 
 function Settings() {
+  const { refreshUser } = useAuth();
+
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [theme, setTheme] = useState("light");
@@ -49,8 +52,8 @@ function Settings() {
   function validate() {
     const errors = {};
 
-    if (!displayName.trim()) {
-      errors.displayName = "Display name is required.";
+    if (displayName.trim().length > 200) {
+      errors.displayName = "Display name must be at most 200 characters.";
     }
 
     if (!email.trim()) {
@@ -93,6 +96,13 @@ function Settings() {
       setTheme(updated.theme);
       applyTheme(updated.theme);
       setSuccess("Settings saved successfully.");
+
+      // Refresh AuthContext so the Navbar immediately reflects any displayName change
+      try {
+        await refreshUser();
+      } catch {
+        // Session expiry is handled by AuthContext; ignore here to preserve success message
+      }
     } catch (err) {
       setError(err.message || "Failed to save settings.");
     } finally {
@@ -122,6 +132,7 @@ function Settings() {
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             disabled={saving}
+            placeholder="Optional — leave blank to use your full name"
           />
           {fieldErrors.displayName && (
             <p className="error">{fieldErrors.displayName}</p>

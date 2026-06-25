@@ -1,16 +1,38 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { login } from "../services/authService";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function getRoleHome(role) {
+  if (role === "admin") return "/admin/dashboard";
+  if (role === "trainer") return "/trainer/dashboard";
+  if (role === "trainee") return "/trainee/dashboard";
+  return "/dashboard";
+}
+
 function Login() {
   const navigate = useNavigate();
+  const { user, loading, isAuthenticated, login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Already authenticated — go straight to role dashboard
+  if (!loading && isAuthenticated) {
+    return <Navigate to={getRoleHome(user.role)} replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="auth-loading">
+        <p className="loading">Loading…</p>
+      </div>
+    );
+  }
 
   function validate() {
     const errors = {};
@@ -39,20 +61,20 @@ function Login() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      await login(email.trim(), password);
-      navigate("/dashboard");
+      const loggedInUser = await login(email.trim(), password);
+      navigate(getRoleHome(loggedInUser.role), { replace: true });
     } catch (err) {
       setSubmitError(err.message || "Login failed.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
-  function fillDemo() {
-    setEmail("trainer@fitflow.com");
-    setPassword("123456");
+  function fillDemo(demoEmail, demoPassword) {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
     setFieldErrors({});
     setSubmitError("");
   }
@@ -62,9 +84,29 @@ function Login() {
       <div className="login-card">
         <h1>FitFlow Login</h1>
         <p className="demo-hint">
-          Demo: trainer@fitflow.com / 123456{" "}
-          <button type="button" className="btn-link" onClick={fillDemo}>
-            Fill demo
+          Demo:{" "}
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => fillDemo("admin@fitflow.com", "123456")}
+          >
+            Admin
+          </button>
+          {" · "}
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => fillDemo("trainer@fitflow.com", "123456")}
+          >
+            Trainer
+          </button>
+          {" · "}
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => fillDemo("trainee@fitflow.com", "123456")}
+          >
+            Trainee
           </button>
         </p>
 
@@ -76,7 +118,7 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
+              disabled={submitting}
             />
             {fieldErrors.email && (
               <p className="error">{fieldErrors.email}</p>
@@ -90,7 +132,7 @@ function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
+              disabled={submitting}
             />
             {fieldErrors.password && (
               <p className="error">{fieldErrors.password}</p>
@@ -99,8 +141,12 @@ function Login() {
 
           {submitError && <p className="error">{submitError}</p>}
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={submitting}
+          >
+            {submitting ? "Logging in…" : "Login"}
           </button>
         </form>
       </div>

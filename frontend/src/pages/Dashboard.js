@@ -7,20 +7,23 @@ function getMostCommonGoal(trainees) {
   if (trainees.length === 0) return "No data";
 
   const counts = {};
-  let topGoal = trainees[0].fitnessGoal;
+  let topGoal = null;
 
   for (const trainee of trainees) {
-    const goal = trainee.fitnessGoal;
-    counts[goal] = (counts[goal] || 0) + 1;
-    if (counts[goal] > counts[topGoal]) {
-      topGoal = goal;
+    const goals = trainee.goals || [];
+    for (const goal of goals) {
+      const name = goal.name;
+      counts[name] = (counts[name] || 0) + 1;
+      if (topGoal === null || counts[name] > counts[topGoal]) {
+        topGoal = name;
+      }
     }
   }
 
-  return topGoal;
+  return topGoal || "No goals set";
 }
 
-function Dashboard() {
+function Dashboard({ title = "Dashboard" }) {
   const [trainees, setTrainees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -56,11 +59,11 @@ function Dashboard() {
   const totalTrainees = trainees.length;
 
   const activeTrainees = trainees.filter(
-    (trainee) => trainee.status === "active"
+    (t) => t.status === "active"
   ).length;
 
   const pausedTrainees = trainees.filter(
-    (trainee) => trainee.status === "paused"
+    (t) => t.status === "paused"
   ).length;
 
   const activeTraineesRate =
@@ -71,18 +74,18 @@ function Dashboard() {
   const mostCommonGoal = getMostCommonGoal(trainees);
 
   const beginnerTrainees = trainees.filter(
-    (trainee) => trainee.experienceLevel === "beginner"
+    (t) => t.experienceLevel === "beginner"
   ).length;
 
   const highCommitmentTrainees = trainees.filter(
-    (trainee) => Number(trainee.weeklyWorkouts) >= 4
+    (t) => Number(t.weeklyWorkouts) >= 4
   ).length;
 
   return (
     <div className="page">
-      <h1>Dashboard</h1>
+      <h1>{title}</h1>
 
-      {loading && <p className="loading">Loading trainees...</p>}
+      {loading && <p className="loading">Loading trainees…</p>}
 
       {error && <p className="error">{error}</p>}
 
@@ -114,9 +117,9 @@ function Dashboard() {
                 variant="summary"
               />
               <InsightCard
-                title="Active Trainees Rate"
+                title="Active Rate"
                 value={`${activeTraineesRate}%`}
-                description="Active out of total trainees"
+                description="Active out of total"
                 variant="summary"
               />
             </div>
@@ -137,7 +140,7 @@ function Dashboard() {
                 variant="accent"
               />
               <InsightCard
-                title="High Commitment Trainees"
+                title="High Commitment"
                 value={highCommitmentTrainees}
                 description="Training 4+ times per week"
               />
@@ -145,7 +148,7 @@ function Dashboard() {
           </section>
 
           <section className="trainees-table-section">
-            <h2>All Trainees</h2>
+            <h2>Trainees</h2>
             <TraineesTable trainees={trainees} />
           </section>
         </>

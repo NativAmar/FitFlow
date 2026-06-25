@@ -1,9 +1,10 @@
-const express = require("express");
-const settingsController = require("../controllers/settingsController");
+const express       = require('express')
+const requireAuth   = require('../middleware/requireAuth')
+const settingsController = require('../controllers/settingsController')
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", settingsController.getSettings);
-router.put("/", settingsController.updateSettings);
+router.get('/', requireAuth, settingsController.getSettings)
+router.put('/', requireAuth, settingsController.updateSettings)
 
-module.exports = router;
+module.exports = router

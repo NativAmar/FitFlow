@@ -1,0 +1,33 @@
+'use strict'
+
+const NOTIFICATION_TYPES = Object.freeze({
+  // Goal management
+  GOAL_ASSIGNED:              'GOAL_ASSIGNED',
+  GOAL_UPDATED:               'GOAL_UPDATED',
+  GOAL_REMOVED:               'GOAL_REMOVED',
+
+  // Trainee admin
+  TRAINEE_STATUS_CHANGED:     'TRAINEE_STATUS_CHANGED',
+  TRAINER_ASSIGNMENT_CHANGED: 'TRAINER_ASSIGNMENT_CHANGED',
+
+  // Workout plan lifecycle
+  WORKOUT_PLAN_ACTIVATED:     'WORKOUT_PLAN_ACTIVATED',
+  WORKOUT_PLAN_UPDATED:       'WORKOUT_PLAN_UPDATED',
+  WORKOUT_PLAN_ARCHIVED:      'WORKOUT_PLAN_ARCHIVED',
+
+  // Nutrition plan lifecycle
+  NUTRITION_PLAN_ACTIVATED:   'NUTRITION_PLAN_ACTIVATED',
+  NUTRITION_PLAN_UPDATED:     'NUTRITION_PLAN_UPDATED',
+  NUTRITION_PLAN_ARCHIVED:    'NUTRITION_PLAN_ARCHIVED',
+
+  // Weekly tracking
+  WORKOUT_TRACKING_UPDATED:   'WORKOUT_TRACKING_UPDATED'
+})
+
+const SUPPORTED_TYPE_SET = new Set(Object.values(NOTIFICATION_TYPES))
+
+function isSupportedType(type) {
+  return SUPPORTED_TYPE_SET.has(type)
+}
+
+module.exports = { NOTIFICATION_TYPES, isSupportedType }

@@ -1,20 +1,20 @@
-const express = require("express");
-const usersController = require("../controllers/usersController");
-const authController = require("../controllers/authController");
-const requireRole = require("../middleware/roleCheck");
-const requireAuth = require("../middleware/requireAuth");
-const validateId = require("../middleware/validateId");
+const express      = require('express')
+const usersController = require('../controllers/usersController')
+const authController  = require('../controllers/authController')
+const requireAuth  = require('../middleware/requireAuth')
+const requireRole  = require('../middleware/requireRole')
+const validateId   = require('../middleware/validateId')
 
-const router = express.Router();
+const router = express.Router()
 
-const allRoles = ["admin", "trainer", "trainee"];
-const adminOnly = ["admin"];
+// /me must be registered before /:id so the literal segment wins
+router.get('/me', requireAuth, authController.getMe)
 
-router.get("/", requireRole(allRoles), usersController.getAll);
-router.get("/me", requireAuth, authController.getMe);
-router.get("/:id", requireRole(allRoles), validateId(), usersController.getById);
-router.post("/", requireRole(adminOnly), usersController.create);
-router.put("/:id", requireRole(adminOnly), validateId(), usersController.update);
-router.delete("/:id", requireRole(adminOnly), validateId(), usersController.remove);
+// All remaining users endpoints are admin-only
+router.get('/',      requireAuth, requireRole('admin'), usersController.getAll)
+router.get('/:id',   requireAuth, requireRole('admin'), validateId(), usersController.getById)
+router.post('/',     requireAuth, requireRole('admin'), usersController.create)
+router.put('/:id',   requireAuth, requireRole('admin'), validateId(), usersController.update)
+router.delete('/:id', requireAuth, requireRole('admin'), validateId(), usersController.remove)
 
-module.exports = router;
+module.exports = router
