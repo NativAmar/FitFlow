@@ -1,24 +1,31 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getMyTraineeProfile } from "../services/traineesService";
+import { getMyWorkoutTracking } from "../services/workoutTrackingService";
 import InsightCard from "../components/InsightCard";
+import WorkoutTrackingSummary from "../components/WorkoutTrackingSummary";
 
 function TraineeDashboard() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tracking, setTracking] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadProfile() {
+    async function loadDashboard() {
       setLoading(true);
       setError("");
       try {
-        const data = await getMyTraineeProfile();
+        const [profileData, trackingData] = await Promise.all([
+          getMyTraineeProfile(),
+          getMyWorkoutTracking().catch(() => null),
+        ]);
         if (!cancelled) {
-          setProfile(data);
+          setProfile(profileData);
+          setTracking(trackingData);
         }
       } catch (err) {
         if (!cancelled) {
@@ -31,7 +38,7 @@ function TraineeDashboard() {
       }
     }
 
-    loadProfile();
+    loadDashboard();
     return () => {
       cancelled = true;
     };
@@ -129,6 +136,39 @@ function TraineeDashboard() {
               </div>
             ))}
           </div>
+        )}
+      </section>
+
+      <section className="insights-section">
+        <h2>This Week's Training</h2>
+        {tracking ? (
+          <>
+            <WorkoutTrackingSummary summary={tracking.summary} />
+            {tracking.sessions && tracking.sessions.length > 0 && (
+              <div className="goals-list" style={{ marginTop: "1rem" }}>
+                {tracking.sessions.map((session) => (
+                  <div key={session.id} className="goal-item">
+                    <span className="goal-name">
+                      {session.scheduledDay
+                        ? session.scheduledDay.charAt(0).toUpperCase() + session.scheduledDay.slice(1)
+                        : "Unscheduled"}{" "}
+                      — {session.name}
+                    </span>
+                    <span
+                      className={`status-badge ${session.tracking?.isCompleted ? "status-completed" : "status-pending"}`}
+                    >
+                      {session.tracking?.isCompleted ? "Done" : "Pending"}
+                    </span>
+                    <span className="goal-target-date">
+                      {session.exerciseAssignments?.length ?? 0} exercises
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="empty-state">No active workout plan for this week.</p>
         )}
       </section>
 
